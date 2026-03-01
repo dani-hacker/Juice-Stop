@@ -137,7 +137,7 @@ export default function App() {
           </nav>
 
           <div className="flex items-center gap-6">
-            <a href="https://github.com/dani-hacker/Juice-Stop/archive/refs/heads/main.zip" className="flex items-center gap-2 text-sm font-bold tracking-widest text-stone-400 hover:text-white transition-colors uppercase">
+            <a href="https://github.com/dani-hacker/Juice-Stop" className="flex items-center gap-2 text-sm font-bold tracking-widest text-stone-400 hover:text-white transition-colors uppercase">
               <Github size={20} />
               <span className="hidden sm:inline">Source Code</span>
             </a>
