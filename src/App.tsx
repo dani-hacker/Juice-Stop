@@ -19,17 +19,28 @@ import {
   Github
 } from 'lucide-react';
 import { JUICES, SHOP_DETAILS, REVIEWS } from './constants';
-import { Juice, CartItem } from './types';
+import { Juice, CartItem, JuiceVariant } from './types';
+import { MenuPage } from './components/MenuPage';
+import { VariantModal } from './components/VariantModal';
 
 export default function App() {
+  const [currentPage, setCurrentPage] = useState<'home' | 'menu'>('home');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  
+  const [variantModalJuice, setVariantModalJuice] = useState<Juice | null>(null);
+  const [isOrderingNow, setIsOrderingNow] = useState(false);
+  const [randomJuices, setRandomJuices] = useState<Juice[]>([]);
+
+  useEffect(() => {
+    const shuffled = [...JUICES].sort(() => 0.5 - Math.random());
+    setRandomJuices(shuffled.slice(0, 8));
+  }, []);
+
   // Address & Order State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [userAddress, setUserAddress] = useState("");
-  const [pendingOrder, setPendingOrder] = useState<{type: 'single' | 'cart', item?: Juice} | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<{type: 'single' | 'cart', item?: Juice, variantName?: string} | null>(null);
   
   // Reviews Carousel State
   const [currentReview, setCurrentReview] = useState(0);
@@ -42,28 +53,38 @@ export default function App() {
     setCurrentReview((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length);
   };
 
-  const addToCart = (juice: Juice) => {
+  const addToCart = (juice: Juice, variant?: JuiceVariant) => {
+    if (juice.variants && !variant) {
+      setIsOrderingNow(false);
+      setVariantModalJuice(juice);
+      return;
+    }
+
+    const price = variant ? variant.price : (juice.price || 0);
+    const variantName = variant ? variant.name : undefined;
+    const cartItemId = `${juice.id}-${variantName || 'default'}`;
+
     setCart(prev => {
-      const existing = prev.find(item => item.id === juice.id);
+      const existing = prev.find(item => item.cartItemId === cartItemId);
       if (existing) {
         return prev.map(item => 
-          item.id === juice.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...juice, quantity: 1 }];
+      return [...prev, { ...juice, cartItemId, price, variantName, quantity: 1 }];
     });
     
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
   };
 
-  const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (cartItemId: string) => {
+    setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
   };
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = (cartItemId: string, delta: number) => {
     setCart(prev => prev.map(item => {
-      if (item.id === id) {
+      if (item.cartItemId === cartItemId) {
         const newQty = Math.max(1, item.quantity + delta);
         return { ...item, quantity: newQty };
       }
@@ -76,13 +97,21 @@ export default function App() {
 
   const formatWhatsAppMessage = (items: CartItem[], total: number, address: string) => {
     const greeting = "Hello Juice Stop! I would like to place an order:\n\n";
-    const details = items.map(item => `- ${item.name} (x${item.quantity}): Rs. ${item.price * item.quantity}`).join('\n');
+    const details = items.map(item => `- ${item.name}${item.variantName ? ` (${item.variantName})` : ''} (x${item.quantity}): Rs. ${item.price * item.quantity}`).join('\n');
     const footer = `\n\nDelivery Address: ${address}\n\nTotal Price: Rs. ${total}\n\nPlease confirm my order. Thanks!`;
     return encodeURIComponent(greeting + details + footer);
   };
 
-  const handleOrderNow = (juice: Juice) => {
-    setPendingOrder({ type: 'single', item: juice });
+  const handleOrderNow = (juice: Juice, variant?: JuiceVariant) => {
+    if (juice.variants && !variant) {
+      setIsOrderingNow(true);
+      setVariantModalJuice(juice);
+      return;
+    }
+    const price = variant ? variant.price : (juice.price || 0);
+    const variantName = variant ? variant.name : undefined;
+    
+    setPendingOrder({ type: 'single', item: { ...juice, price } as unknown as CartItem, variantName });
     setIsAddressModalOpen(true);
   };
 
@@ -102,7 +131,8 @@ export default function App() {
     let message = "";
     if (pendingOrder?.type === 'single' && pendingOrder.item) {
       const juice = pendingOrder.item;
-      message = encodeURIComponent(`Hello Juice Stop! I would like to order 1 ${juice.name} for Rs. ${juice.price}.\n\nDelivery Address: ${userAddress}\n\nPlease confirm. Thanks!`);
+      const variantText = pendingOrder.variantName ? ` (${pendingOrder.variantName})` : '';
+      message = encodeURIComponent(`Hello Juice Stop! I would like to order 1 ${juice.name}${variantText} for Rs. ${juice.price}.\n\nDelivery Address: ${userAddress}\n\nPlease confirm. Thanks!`);
     } else if (pendingOrder?.type === 'cart') {
       message = formatWhatsAppMessage(cart, totalPrice, userAddress);
       setCart([]); // Clear cart after checkout
@@ -130,17 +160,18 @@ export default function App() {
           </div>
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-stone-400">
-            <a href="#philosophy" className="hover:text-white transition-colors">Our Story</a>
-            <a href="#products" className="hover:text-white transition-colors">Menu</a>
-            <a href="#reviews" className="hover:text-white transition-colors">Reviews</a>
+            <button onClick={() => setCurrentPage('home')} className={`transition-colors uppercase tracking-widest font-bold ${currentPage === 'home' ? 'text-white' : 'hover:text-white'}`}>Home</button>
+            <button onClick={() => setCurrentPage('menu')} className={`transition-colors uppercase tracking-widest font-bold ${currentPage === 'menu' ? 'text-white' : 'hover:text-white'}`}>Menu</button>
+            {currentPage === 'home' && (
+              <>
+                <a href="#philosophy" className="hover:text-white transition-colors">Our Story</a>
+                <a href="#reviews" className="hover:text-white transition-colors">Reviews</a>
+              </>
+            )}
             <a href="#location" className="hover:text-white transition-colors">Find Us</a>
           </nav>
 
           <div className="flex items-center gap-6">
-            <a href="https://github.com/dani-hacker/Juice-Stop" className="flex items-center gap-2 text-sm font-bold tracking-widest text-stone-400 hover:text-white transition-colors uppercase">
-              <Github size={20} />
-              <span className="hidden sm:inline">Source Code</span>
-            </a>
             <a href={`tel:${SHOP_DETAILS.phone}`} className="hidden sm:flex items-center gap-2 text-sm font-bold tracking-widest text-[#e20a16] hover:text-white transition-colors uppercase">
               <Phone size={18} />
               <span>Call Us</span>
@@ -149,10 +180,12 @@ export default function App() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center bg-[#151515] overflow-hidden">
-        
-        {/* Full Desktop & Mobile Background Image */}
+      {currentPage === 'home' ? (
+        <>
+          {/* Hero Section */}
+          <section className="relative min-h-[90vh] flex items-center bg-[#151515] overflow-hidden">
+            
+            {/* Full Desktop & Mobile Background Image */}
         <div className="absolute inset-0 z-0">
           <div className="relative w-full h-full">
             {/* 
@@ -177,7 +210,7 @@ export default function App() {
             <motion.h2 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-[4rem] sm:text-[5rem] lg:text-[5.5rem] xl:text-[7rem] leading-[0.95] font-black uppercase tracking-tight italic"
+              className="text-[3rem] sm:text-[5rem] lg:text-[5.5rem] xl:text-[7rem] leading-[0.95] font-black uppercase tracking-tight italic"
             >
               <span className="text-white block drop-shadow-lg">FRESHNESS IN</span>
               <span className="text-[#e20a16] block tracking-tighter drop-shadow-lg">EVERY SIP</span>
@@ -198,12 +231,13 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <a 
-                href="#products"
+              <button 
+                onClick={() => setCurrentPage('menu')}
+
                 className="inline-flex items-center gap-2 bg-[#e20a16] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#b00710] shadow-xl transition-all"
               >
                 Explore Flavors <ArrowRight size={20} />
-              </a>
+              </button>
             </motion.div>
           </div>
         </div>
@@ -285,26 +319,29 @@ export default function App() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {JUICES.map((juice) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {randomJuices.map((juice) => (
             <motion.div 
               key={juice.id}
               whileHover={{ y: -10 }}
               className="group bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-xl transition-all"
             >
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
                 <img 
                   src={juice.image} 
                   alt={juice.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900">
-                  Rs. {juice.price}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900 shadow-sm text-sm">
+                  {juice.price ? `Rs. ${juice.price}` : `From Rs. ${Math.min(...(juice.variants?.map(v => v.price) || [0]))}`}
                 </div>
               </div>
               <div className="p-6">
-                <h3 className={`text-2xl font-bold mb-2 ${juice.color}`}>{juice.name}</h3>
+                <span className="text-xs font-bold text-[#e20a16] uppercase tracking-wider mb-1 block">
+                  {juice.category}
+                </span>
+                <h3 className="text-2xl font-bold mb-2 text-black">{juice.name}</h3>
                 <p className="text-stone-500 text-sm mb-6">{juice.description}</p>
                 <div className="flex gap-3">
                   <button 
@@ -323,6 +360,15 @@ export default function App() {
               </div>
             </motion.div>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center">
+          <button 
+            onClick={() => setCurrentPage('menu')}
+            className="inline-flex items-center gap-2 bg-[#e20a16] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-[#b00710] shadow-xl transition-all"
+          >
+            Explore Full Menu <ArrowRight size={20} />
+          </button>
         </div>
       </section>
 
@@ -464,6 +510,11 @@ export default function App() {
 
         </div>
       </section>
+
+        </>
+      ) : (
+        <MenuPage onAddToCart={addToCart} onOrderNow={handleOrderNow} />
+      )}
 
       {/* Location Section */}
       <section id="location" className="max-w-7xl mx-auto px-4 py-24">
@@ -607,22 +658,24 @@ export default function App() {
                       <div className="flex-1">
                         <div className="flex justify-between mb-1">
                           <h4 className="font-bold">{item.name}</h4>
-                          <button onClick={() => removeFromCart(item.id)} className="text-stone-400 hover:text-red-600">
+                          <button onClick={() => removeFromCart(item.cartItemId)} className="text-stone-400 hover:text-red-600">
                             <X size={16} />
                           </button>
                         </div>
-                        <p className="text-sm text-stone-500 mb-3">Rs. {item.price}</p>
+                        <p className="text-sm text-stone-500 mb-3">
+                          {item.variantName ? `${item.variantName} - ` : ''}Rs. {item.price}
+                        </p>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden">
                             <button 
-                              onClick={() => updateQuantity(item.id, -1)}
+                              onClick={() => updateQuantity(item.cartItemId, -1)}
                               className="p-1 hover:bg-stone-100 transition-colors"
                             >
                               <Minus size={14} />
                             </button>
                             <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
                             <button 
-                              onClick={() => updateQuantity(item.id, 1)}
+                              onClick={() => updateQuantity(item.cartItemId, 1)}
                               className="p-1 hover:bg-stone-100 transition-colors"
                             >
                               <Plus size={14} />
@@ -712,6 +765,20 @@ export default function App() {
           </>
         )}
       </AnimatePresence>
+
+      <VariantModal 
+        isOpen={!!variantModalJuice} 
+        juice={variantModalJuice} 
+        onClose={() => setVariantModalJuice(null)} 
+        onConfirm={(juice, variant) => {
+          if (isOrderingNow) {
+            handleOrderNow(juice, variant);
+          } else {
+            addToCart(juice, variant);
+          }
+          setVariantModalJuice(null);
+        }} 
+      />
     </div>
   );
 }
