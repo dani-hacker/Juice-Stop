@@ -56,7 +56,7 @@ export const JUICES: Juice[] = [
 
 export const SHOP_DETAILS = {
   address: 'H26C+G8J Juice stop, Street No 08, Shadman Town, Rawalpindi, Pakistan',
-  location: 'Located in: Allied Benk Ltd - ABL, Chakri Road',
+  location: 'Located in: Opposite side of Allied Benk Ltd - ABL, Chakri Road',
   phone: '+923165269228',
   whatsapp: '923165269228',
 };

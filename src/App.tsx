@@ -43,6 +43,7 @@ export default function App() {
 
   // Address & Order State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [userName, setUserName] = useState("");
   const [userAddress, setUserAddress] = useState("");
   const [pendingOrder, setPendingOrder] = useState<{type: 'single' | 'cart', item?: Juice, variantName?: string, flavor?: string} | null>(null);
   
@@ -99,14 +100,14 @@ export default function App() {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const formatWhatsAppMessage = (items: CartItem[], total: number, address: string) => {
+  const formatWhatsAppMessage = (items: CartItem[], total: number, name: string, address: string) => {
     const greeting = "*Hello Juice Stop! I would like to place an order:*\n\n";
     const details = items.map(item => {
       const variantText = [item.flavor, item.variantName].filter(Boolean).join(' - ');
       const variantSuffix = variantText ? ` (${variantText})` : '';
       return `• *${item.name}${variantSuffix} (x${item.quantity}):* Rs. ${item.price * item.quantity}`;
     }).join('\n');
-    const footer = `\n\n*Delivery Address:*\n${address}\n\n*Total Price:* Rs. ${total}\n\nPlease confirm my order. Thanks!`;
+    const footer = `\n\n*Name:* ${name}\n*Delivery Address:*\n${address}\n\n*Total Price:* Rs. ${total}\n\nPlease confirm my order. Thanks!`;
     return encodeURIComponent(greeting + details + footer);
   };
 
@@ -131,8 +132,8 @@ export default function App() {
   };
 
   const confirmOrderAndSendWa = () => {
-    if (!userAddress.trim()) {
-      alert("Please enter your delivery address.");
+    if (!userName.trim() || !userAddress.trim()) {
+      alert("Please enter your name and delivery address.");
       return;
     }
 
@@ -141,9 +142,9 @@ export default function App() {
       const juice = pendingOrder.item;
       const variantText = [pendingOrder.flavor, pendingOrder.variantName].filter(Boolean).join(' - ');
       const variantSuffix = variantText ? ` (${variantText})` : '';
-      message = encodeURIComponent(`*Hello Juice Stop! I would like to order:*\n\n• *1x ${juice.name}${variantSuffix}:* Rs. ${juice.price}\n\n*Delivery Address:*\n${userAddress}\n\nPlease confirm. Thanks!`);
+      message = encodeURIComponent(`*Hello Juice Stop! I would like to order:*\n\n• *1x ${juice.name}${variantSuffix}:* Rs. ${juice.price}\n\n*Name:* ${userName}\n*Delivery Address:*\n${userAddress}\n\nPlease confirm. Thanks!`);
     } else if (pendingOrder?.type === 'cart') {
-      message = formatWhatsAppMessage(cart, totalPrice, userAddress);
+      message = formatWhatsAppMessage(cart, totalPrice, userName, userAddress);
       setCart([]); // Clear cart after checkout
       setIsCartOpen(false);
     }
@@ -152,6 +153,7 @@ export default function App() {
     
     setIsAddressModalOpen(false);
     setPendingOrder(null);
+    setUserName("");
     setUserAddress("");
     
     setShowSuccess(true);
@@ -164,7 +166,7 @@ export default function App() {
       <header className="sticky top-0 z-50 bg-[#151515]/95 backdrop-blur-xl border-b border-white/10 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Juice Stop Logo" className="h-[40px] md:h-12 w-auto object-contain" />
+            <img src="/logo.webp" alt="Juice Stop Logo" className="h-[40px] md:h-12 w-auto object-contain" />
             <span className="text-xl md:text-2xl font-black tracking-tighter text-white italic uppercase">JUICE STOP</span>
           </div>
           
@@ -274,7 +276,7 @@ export default function App() {
         <div className="absolute inset-0 z-0">
           <div className="relative w-full h-full flex justify-end">
             <img 
-              src="/hero-background.jpg" 
+              src="/hero-background.webp" 
               alt="Juice Stop Hero"
               className="w-full md:w-[70%] lg:w-[60%] h-full object-cover object-[center_center] opacity-30 md:opacity-90"
               style={{
@@ -383,7 +385,7 @@ export default function App() {
           >
             <div className="relative w-full aspect-square md:aspect-video lg:aspect-square rounded-[3rem] overflow-hidden shadow-2xl">
               <img 
-                src="/shop-front.png" 
+                src="/shop-front.webp" 
                 alt="Delicious Ice Cream Shakes and Scoops"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -729,7 +731,7 @@ export default function App() {
       <footer className="bg-[#151515] border-t border-stone-200 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <img src="/logo.png" alt="Juice Stop Logo" className="h-10 w-auto object-contain" />
+            <img src="/logo.webp" alt="Juice Stop Logo" className="h-10 w-auto object-contain" />
             <span className="text-xl font-black tracking-tighter text-red-600 italic uppercase">JUICE STOP</span>
           </div>
           <p className="text-stone-400 text-sm">© 2024 Juice Stop Rawalpindi. All rights reserved.</p>
@@ -895,13 +897,23 @@ export default function App() {
                   <X size={18} />
                 </button>
               </div>
-              <div className="p-6">
-                <label className="block text-sm font-bold text-stone-700 mb-2">Please enter your full delivery address:</label>
+              <div className="p-6 pb-2">
+                <label className="block text-sm font-bold text-stone-700 mb-2">Your Name:</label>
+                <input 
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="w-full border-2 border-stone-200 rounded-xl p-4 focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10 transition-all font-medium"
+                />
+              </div>
+              <div className="p-6 pt-4">
+                <label className="block text-sm font-bold text-stone-700 mb-2">Full Delivery Address:</label>
                 <textarea 
                   value={userAddress}
                   onChange={(e) => setUserAddress(e.target.value)}
                   placeholder="Street, House No, Society, City..."
-                  className="w-full border-2 border-stone-200 rounded-xl p-4 min-h-[120px] focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10 transition-all resize-none"
+                  className="w-full border-2 border-stone-200 rounded-xl p-4 min-h-[100px] focus:outline-none focus:border-red-600 focus:ring-4 focus:ring-red-600/10 transition-all resize-none"
                 />
               </div>
               <div className="p-6 border-t border-stone-100 bg-stone-50 flex gap-3">
@@ -913,7 +925,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={confirmOrderAndSendWa}
-                  disabled={!userAddress.trim()}
+                  disabled={!userName.trim() || !userAddress.trim()}
                   className="flex-[2] bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
                 >
                   Confirm Order <ArrowRight size={18} />
