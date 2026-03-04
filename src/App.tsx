@@ -13,6 +13,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Menu,
   Leaf,
   Shield,
   Droplets,
@@ -25,22 +26,25 @@ import { VariantModal } from './components/VariantModal';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'menu'>('home');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [variantModalJuice, setVariantModalJuice] = useState<Juice | null>(null);
   const [isOrderingNow, setIsOrderingNow] = useState(false);
-  const [randomJuices, setRandomJuices] = useState<Juice[]>([]);
+  const [randomSingleJuices, setRandomSingleJuices] = useState<Juice[]>([]);
+  const groupedJuices = JUICES.filter(j => j.flavors && j.flavors.length > 0);
 
   useEffect(() => {
-    const shuffled = [...JUICES].sort(() => 0.5 - Math.random());
-    setRandomJuices(shuffled.slice(0, 8));
+    const singles = JUICES.filter(j => !j.flavors || j.flavors.length === 0);
+    const shuffled = [...singles].sort(() => 0.5 - Math.random());
+    setRandomSingleJuices(shuffled.slice(0, 8));
   }, []);
 
   // Address & Order State
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [userAddress, setUserAddress] = useState("");
-  const [pendingOrder, setPendingOrder] = useState<{type: 'single' | 'cart', item?: Juice, variantName?: string} | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<{type: 'single' | 'cart', item?: Juice, variantName?: string, flavor?: string} | null>(null);
   
   // Reviews Carousel State
   const [currentReview, setCurrentReview] = useState(0);
@@ -53,8 +57,8 @@ export default function App() {
     setCurrentReview((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length);
   };
 
-  const addToCart = (juice: Juice, variant?: JuiceVariant) => {
-    if (juice.variants && !variant) {
+  const addToCart = (juice: Juice, variant?: JuiceVariant, flavor?: string) => {
+    if ((juice.variants && !variant) || (juice.flavors && !flavor)) {
       setIsOrderingNow(false);
       setVariantModalJuice(juice);
       return;
@@ -62,7 +66,7 @@ export default function App() {
 
     const price = variant ? variant.price : (juice.price || 0);
     const variantName = variant ? variant.name : undefined;
-    const cartItemId = `${juice.id}-${variantName || 'default'}`;
+    const cartItemId = `${juice.id}-${variantName || 'default'}-${flavor || 'default'}`;
 
     setCart(prev => {
       const existing = prev.find(item => item.cartItemId === cartItemId);
@@ -71,7 +75,7 @@ export default function App() {
           item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prev, { ...juice, cartItemId, price, variantName, quantity: 1 }];
+      return [...prev, { ...juice, cartItemId, price, variantName, flavor, quantity: 1 }];
     });
     
     setShowSuccess(true);
@@ -96,14 +100,18 @@ export default function App() {
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const formatWhatsAppMessage = (items: CartItem[], total: number, address: string) => {
-    const greeting = "Hello Juice Stop! I would like to place an order:\n\n";
-    const details = items.map(item => `- ${item.name}${item.variantName ? ` (${item.variantName})` : ''} (x${item.quantity}): Rs. ${item.price * item.quantity}`).join('\n');
-    const footer = `\n\nDelivery Address: ${address}\n\nTotal Price: Rs. ${total}\n\nPlease confirm my order. Thanks!`;
+    const greeting = "*Hello Juice Stop! I would like to place an order:*\n\n";
+    const details = items.map(item => {
+      const variantText = [item.flavor, item.variantName].filter(Boolean).join(' - ');
+      const variantSuffix = variantText ? ` (${variantText})` : '';
+      return `• *${item.name}${variantSuffix} (x${item.quantity}):* Rs. ${item.price * item.quantity}`;
+    }).join('\n');
+    const footer = `\n\n*Delivery Address:*\n${address}\n\n*Total Price:* Rs. ${total}\n\nPlease confirm my order. Thanks!`;
     return encodeURIComponent(greeting + details + footer);
   };
 
-  const handleOrderNow = (juice: Juice, variant?: JuiceVariant) => {
-    if (juice.variants && !variant) {
+  const handleOrderNow = (juice: Juice, variant?: JuiceVariant, flavor?: string) => {
+    if ((juice.variants && !variant) || (juice.flavors && !flavor)) {
       setIsOrderingNow(true);
       setVariantModalJuice(juice);
       return;
@@ -111,7 +119,7 @@ export default function App() {
     const price = variant ? variant.price : (juice.price || 0);
     const variantName = variant ? variant.name : undefined;
     
-    setPendingOrder({ type: 'single', item: { ...juice, price } as unknown as CartItem, variantName });
+    setPendingOrder({ type: 'single', item: { ...juice, price } as unknown as CartItem, variantName, flavor });
     setIsAddressModalOpen(true);
   };
 
@@ -131,8 +139,9 @@ export default function App() {
     let message = "";
     if (pendingOrder?.type === 'single' && pendingOrder.item) {
       const juice = pendingOrder.item;
-      const variantText = pendingOrder.variantName ? ` (${pendingOrder.variantName})` : '';
-      message = encodeURIComponent(`Hello Juice Stop! I would like to order 1 ${juice.name}${variantText} for Rs. ${juice.price}.\n\nDelivery Address: ${userAddress}\n\nPlease confirm. Thanks!`);
+      const variantText = [pendingOrder.flavor, pendingOrder.variantName].filter(Boolean).join(' - ');
+      const variantSuffix = variantText ? ` (${variantText})` : '';
+      message = encodeURIComponent(`*Hello Juice Stop! I would like to order:*\n\n• *1x ${juice.name}${variantSuffix}:* Rs. ${juice.price}\n\n*Delivery Address:*\n${userAddress}\n\nPlease confirm. Thanks!`);
     } else if (pendingOrder?.type === 'cart') {
       message = formatWhatsAppMessage(cart, totalPrice, userAddress);
       setCart([]); // Clear cart after checkout
@@ -155,8 +164,8 @@ export default function App() {
       <header className="sticky top-0 z-50 bg-[#151515]/95 backdrop-blur-xl border-b border-white/10 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#e20a16] rounded-full flex items-center justify-center text-white font-black text-xl shadow-[0_0_15px_rgba(226,10,22,0.5)]">JS</div>
-            <h1 className="text-2xl font-black tracking-tighter text-white italic uppercase">JUICE STOP</h1>
+            <img src="/logo.png" alt="Juice Stop Logo" className="h-[40px] md:h-12 w-auto object-contain" />
+            <span className="text-xl md:text-2xl font-black tracking-tighter text-white italic uppercase">JUICE STOP</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-stone-400">
@@ -176,9 +185,85 @@ export default function App() {
               <Phone size={18} />
               <span>Call Us</span>
             </a>
+            
+            {/* Mobile Menu Toggle */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden text-white hover:text-red-500 transition-colors"
+            >
+              <Menu size={28} />
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Sidebar Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-[320px] bg-[#151515] border-l border-white/10 z-[70] shadow-2xl flex flex-col"
+            >
+              <div className="h-20 border-b border-white/10 flex items-center justify-between px-6">
+                <span className="text-xl font-black tracking-tighter text-white italic uppercase">MENU</span>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6">
+                <button 
+                  onClick={() => { setCurrentPage('home'); setIsMobileMenuOpen(false); }} 
+                  className={`text-left text-lg font-bold uppercase tracking-widest transition-colors ${currentPage === 'home' ? 'text-red-500' : 'text-stone-300 hover:text-white'}`}
+                >
+                  Home
+                </button>
+                <button 
+                  onClick={() => { setCurrentPage('menu'); setIsMobileMenuOpen(false); }} 
+                  className={`text-left text-lg font-bold uppercase tracking-widest transition-colors ${currentPage === 'menu' ? 'text-red-500' : 'text-stone-300 hover:text-white'}`}
+                >
+                  Menu
+                </button>
+                
+                {currentPage === 'home' && (
+                  <div className="flex flex-col gap-4 pl-4 border-l-2 border-white/10 mt-2 mb-2">
+                    <a href="#philosophy" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Our Story</a>
+                    <a href="#reviews" onClick={() => setIsMobileMenuOpen(false)} className="text-stone-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Reviews</a>
+                  </div>
+                )}
+                
+                <a href="#location" onClick={() => setIsMobileMenuOpen(false)} className="text-left text-lg font-bold uppercase tracking-widest text-stone-300 hover:text-white transition-colors">
+                  Find Us
+                </a>
+              </div>
+
+              <div className="p-6 border-t border-white/10">
+                <a 
+                  href={`tel:${SHOP_DETAILS.phone}`} 
+                  className="flex items-center justify-center gap-3 w-full bg-[#151515] text-[#e20a16] border border-[#e20a16] py-3 rounded-xl font-bold tracking-widest uppercase hover:bg-[#e20a16] hover:text-white transition-all"
+                >
+                  <Phone size={18} />
+                  Call Us
+                </a>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {currentPage === 'home' ? (
         <>
@@ -187,33 +272,42 @@ export default function App() {
             
             {/* Full Desktop & Mobile Background Image */}
         <div className="absolute inset-0 z-0">
-          <div className="relative w-full h-full">
-            {/* 
-              By setting the image to double width and pushing it right, 
-              we crop the original text out of bounds on the left, but we keep the element 
-              spanning the full width behind everything as a background!
-            */}
+          <div className="relative w-full h-full flex justify-end">
             <img 
-              src="/hero-new.png" 
-              alt="Hero Background"
-              className="w-[200%] sm:w-[150%] max-w-[200%] h-full object-cover object-right absolute right-0 opacity-80"
+              src="/hero-background.jpg" 
+              alt="Juice Stop Hero"
+              className="w-full md:w-[70%] lg:w-[60%] h-full object-cover object-[center_center] opacity-30 md:opacity-90"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 25%)',
+                maskImage: 'linear-gradient(to right, transparent, black 25%)'
+              }}
+              loading="lazy"
             />
-            {/* Gradient overlay to ensure text stays legible on the left */}
-            <div className="absolute inset-y-0 left-0 w-full sm:w-1/2 bg-gradient-to-r from-[#151515] via-[#151515]/80 to-transparent z-10"></div>
+            {/* Gradient overlay for mobile text legibility */}
+            <div className="absolute inset-y-0 left-0 w-full md:hidden bg-gradient-to-r from-[#151515] via-[#151515]/80 to-transparent z-10"></div>
           </div>
         </div>
 
         <div className="w-full max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between relative z-10 py-20 md:py-0">
           
           {/* Typography & CTA (Now sitting on top of the bg) */}
-          <div className="w-full md:w-[60%] flex flex-col justify-center text-left space-y-8 pr-0 md:pr-8">
+          <div className="w-full md:w-[60%] flex flex-col justify-center text-left space-y-6 pr-0 md:pr-8">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="inline-flex items-center gap-2 bg-[#e20a16]/10 border-2 border-[#e20a16] text-[#e20a16] font-black px-6 py-2.5 rounded-full uppercase tracking-wider shadow-[0_0_20px_rgba(226,10,22,0.2)]">
+                <span className="animate-pulse">✨</span> Enjoy 5% Off All Orders
+              </div>
+            </motion.div>
+
             <motion.h2 
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-[3rem] sm:text-[5rem] lg:text-[5.5rem] xl:text-[7rem] leading-[0.95] font-black uppercase tracking-tight italic"
+              className="text-[3rem] sm:text-[4.5rem] lg:text-[5rem] xl:text-[5rem] leading-[0.95] font-black uppercase tracking-tight italic"
             >
-              <span className="text-white block drop-shadow-lg">FRESHNESS IN</span>
-              <span className="text-[#e20a16] block tracking-tighter drop-shadow-lg">EVERY SIP</span>
+              <span className="text-white block drop-shadow-lg">PREMIUM <br/>SHAKES</span>
+              <span className="text-[#e20a16] block tracking-tighter drop-shadow-lg">& SCOOPS</span>
             </motion.h2>
 
             <motion.p 
@@ -222,7 +316,7 @@ export default function App() {
               transition={{ delay: 0.1 }}
               className="text-stone-300 text-lg sm:text-xl max-w-lg font-medium leading-relaxed drop-shadow-md"
             >
-              Experience the vibrant taste of nature with our 100% natural, freshly squeezed juices. 
+              Indulge in our signature thick Ice Cream Shakes, creamy Scoops, and refreshing beverages. 
               Handcrafted daily in the heart of Rawalpindi.
             </motion.p>
             
@@ -255,27 +349,27 @@ export default function App() {
             className="lg:w-1/2 space-y-8"
           >
             <div>
-              <span className="text-red-600 font-bold uppercase tracking-widest text-sm block mb-2">Our Philosophy</span>
+              <span className="text-red-600 font-bold uppercase tracking-widest text-sm block mb-2">Our Specialty</span>
               <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase italic text-stone-900">
-                NOTHING BUT <span className="text-red-600">NATURE</span>
+                INDULGE IN <span className="text-red-600">PERFECTION</span>
               </h2>
             </div>
             
             <p className="text-stone-600 text-lg leading-relaxed">
-              At Juice Stop, we believe that the best flavors come straight from the earth. That's why we source only the freshest, locally-grown fruits for our beverages. 
+              At Juice Stop, we believe that the best moments are sweet. That's why we pour our passion into every single Ice Cream Shake, Scoop, and Milk Shake we serve.
             </p>
             <p className="text-stone-600 text-lg leading-relaxed">
-              No artificial colors. No preservatives. No added water. Just pure, unadulterated juice pressed to perfection so you can taste the difference in every single drop.
+              From premium ingredients to rich, decadent flavor combinations, our signature treats and delicious refreshments are crafted to satisfy your cravings and bring a smile to your face.
             </p>
             
             <div className="pt-4 flex gap-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="text-red-600" size={24} />
-                <span className="font-bold text-stone-800">100% Raw</span>
+                <span className="font-bold text-stone-800">Premium Quality</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="text-red-600" size={24} />
-                <span className="font-bold text-stone-800">Never Heated</span>
+                <span className="font-bold text-stone-800">Rich Flavors</span>
               </div>
             </div>
           </motion.div>
@@ -289,38 +383,98 @@ export default function App() {
           >
             <div className="relative w-full aspect-square md:aspect-video lg:aspect-square rounded-[3rem] overflow-hidden shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&q=80&w=1000" 
-                alt="Fresh citrus fruits being squeezed"
+                src="/shop-front.png" 
+                alt="Delicious Ice Cream Shakes and Scoops"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-stone-900/40 to-transparent"></div>
             </div>
             {/* Floating accent block */}
             <div className="absolute -bottom-8 -left-8 bg-white p-6 rounded-3xl shadow-xl border border-stone-100 hidden md:block">
-              <div className="font-black text-4xl text-red-600 italic">100%</div>
-              <div className="text-stone-800 font-bold uppercase tracking-wider text-sm">Natural Ingredients</div>
+              <div className="font-black text-4xl text-red-600 italic">BEST</div>
+              <div className="text-stone-800 font-bold uppercase tracking-wider text-sm">Sellers In Town</div>
             </div>
           </motion.div>
         </div>
       </div>
     </section>
 
-    {/* Products Section */}
-    <section id="products" className="max-w-7xl mx-auto px-4 py-24">
+    {/* Grouped Products Section */}
+    <section id="grouped-products" className="bg-white py-24 border-b border-stone-100">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="text-red-600 font-bold uppercase tracking-widest text-sm">Our Menu</span>
-            <h2 className="text-4xl font-black tracking-tight">VIBRANT FLAVORS</h2>
+            <span className="text-red-600 font-bold uppercase tracking-widest text-sm block mb-2">Signature Series</span>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase italic text-stone-900">PREMIUM <span className="text-red-600">RANGES</span></h2>
           </div>
           <p className="text-stone-500 max-w-md">
-            Choose from our wide selection of seasonal and classic fruit juices. 
-            All juices are made to order with no added preservatives.
+            Explore our curated collections of multi-flavored shakes, scoops, and juices.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {randomJuices.map((juice) => (
+          {groupedJuices.map((juice) => (
+            <motion.div 
+              key={juice.id}
+              whileHover={{ y: -10 }}
+              className="group bg-stone-50 rounded-3xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-xl transition-all"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src={juice.image} 
+                  alt={juice.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                />
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900 shadow-sm text-sm">
+                  {juice.price ? `Rs. ${juice.price}` : `From Rs. ${Math.min(...(juice.variants?.map(v => v.price) || [0]))}`}
+                </div>
+              </div>
+              <div className="p-6">
+                <span className="text-xs font-bold text-[#e20a16] uppercase tracking-wider mb-1 block">
+                  {juice.category}
+                </span>
+                <h3 className="text-2xl font-bold mb-2 text-black">{juice.name}</h3>
+                <p className="text-stone-500 text-sm mb-6">{juice.description}</p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => handleOrderNow(juice)}
+                    className="flex-1 bg-[#e20a16] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#b00710] transition-colors shadow-lg shadow-red-600/20 flex items-center justify-center gap-2"
+                  >
+                    Select Flavor
+                  </button>
+                  <button 
+                    onClick={() => addToCart(juice)}
+                    className="w-14 h-12 flex items-center justify-center border-2 border-[#e20a16] rounded-xl text-[#e20a16] hover:bg-[#e20a16] hover:text-white transition-all shadow-sm"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* Single Products Section */}
+    <section id="products" className="max-w-7xl mx-auto px-4 py-24">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div>
+            <span className="text-red-600 font-bold uppercase tracking-widest text-sm">Quick Picks</span>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase italic text-stone-900">SINGLE <span className="text-red-600">FLAVOUR</span></h2>
+          </div>
+          <p className="text-stone-500 max-w-md">
+            Choose from our wide selection of seasonal and classic refreshments. 
+            Made to order with no added preservatives.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {randomSingleJuices.map((juice) => (
             <motion.div 
               key={juice.id}
               whileHover={{ y: -10 }}
@@ -332,6 +486,7 @@ export default function App() {
                   alt={juice.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900 shadow-sm text-sm">
                   {juice.price ? `Rs. ${juice.price}` : `From Rs. ${Math.min(...(juice.variants?.map(v => v.price) || [0]))}`}
@@ -564,17 +719,18 @@ export default function App() {
               alt="Shop Interior"
               className="w-full h-full object-cover opacity-80"
               referrerPolicy="no-referrer"
+              loading="lazy"
             />
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-stone-200 py-6">
+      <footer className="bg-[#151515] border-t border-stone-200 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">JS</div>
-            <span className="text-xl font-black tracking-tighter text-red-600 italic">JUICE STOP</span>
+            <img src="/logo.png" alt="Juice Stop Logo" className="h-10 w-auto object-contain" />
+            <span className="text-xl font-black tracking-tighter text-red-600 italic uppercase">JUICE STOP</span>
           </div>
           <p className="text-stone-400 text-sm">© 2024 Juice Stop Rawalpindi. All rights reserved.</p>
         </div>
@@ -663,7 +819,9 @@ export default function App() {
                           </button>
                         </div>
                         <p className="text-sm text-stone-500 mb-3">
-                          {item.variantName ? `${item.variantName} - ` : ''}Rs. {item.price}
+                          {[item.flavor, item.variantName].filter(Boolean).join(' - ')}
+                          {[item.flavor, item.variantName].filter(Boolean).length > 0 ? ' • ' : ''}
+                          Rs. {item.price}
                         </p>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden">
@@ -770,11 +928,11 @@ export default function App() {
         isOpen={!!variantModalJuice} 
         juice={variantModalJuice} 
         onClose={() => setVariantModalJuice(null)} 
-        onConfirm={(juice, variant) => {
+        onConfirm={(juice, variant, flavor) => {
           if (isOrderingNow) {
-            handleOrderNow(juice, variant);
+            handleOrderNow(juice, variant, flavor);
           } else {
-            addToCart(juice, variant);
+            addToCart(juice, variant, flavor);
           }
           setVariantModalJuice(null);
         }} 

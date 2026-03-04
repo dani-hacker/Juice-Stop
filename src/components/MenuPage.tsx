@@ -106,6 +106,7 @@ export function MenuPage({ onAddToCart, onOrderNow }: MenuPageProps) {
                     alt={juice.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                   />
                   <div className="absolute top-4 right-4 bg-white/95 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900 shadow-sm text-sm">
                     {juice.price ? `Rs. ${juice.price}` : `From Rs. ${Math.min(...(juice.variants?.map(v => v.price) || [0]))}`}
@@ -122,13 +123,21 @@ export function MenuPage({ onAddToCart, onOrderNow }: MenuPageProps) {
                   <div className="flex gap-2 mt-auto">
                     <button 
                       onClick={() => onOrderNow(juice)}
-                      className="flex-1 bg-stone-900 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                      className={`flex-1 text-white py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+                        juice.flavors && juice.flavors.length > 0 
+                          ? 'bg-[#e20a16] hover:bg-[#b00710] shadow-lg shadow-red-600/20' 
+                          : 'bg-stone-900 hover:bg-stone-800'
+                      }`}
                     >
-                      Order Now
+                      {juice.flavors && juice.flavors.length > 0 ? 'Select Flavor' : 'Order Now'}
                     </button>
                     <button 
                       onClick={() => onAddToCart(juice)}
-                      className="w-12 h-10 flex items-center justify-center border-2 border-stone-900 rounded-xl text-stone-900 hover:bg-stone-900 hover:text-white transition-all shrink-0"
+                      className={`w-12 h-10 flex items-center justify-center border-2 rounded-xl transition-all shrink-0 ${
+                        juice.flavors && juice.flavors.length > 0
+                          ? 'border-[#e20a16] text-[#e20a16] hover:bg-[#e20a16] hover:text-white shadow-sm'
+                          : 'border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white'
+                      }`}
                     >
                       <Plus size={18} />
                     </button>
