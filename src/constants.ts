@@ -18,10 +18,10 @@ export const JUICES: Juice[] = [
   { id: 'nj-1', category: 'Natural Juice', name: 'Apple Juice', price: 250, color: 'text-red-600', bgColor: 'bg-red-50', description: 'Freshly squeezed apple juice.', image: '/images/products/apple-juice.webp' },
   { id: 'nj-2', category: 'Natural Juice', name: 'Orange Juice', price: 250, color: 'text-orange-500', bgColor: 'bg-orange-50', description: 'Freshly squeezed orange juice.', image: '/images/products/orange-juice.webp' },
   { id: 'nj-3', category: 'Natural Juice', name: 'Carrot Juice', price: 250, color: 'text-orange-600', bgColor: 'bg-orange-50', description: 'Healthy carrot juice.', image: '/images/products/carrot -juice.webp' },
-  { id: 'nj-4', category: 'Natural Juice', name: 'Mosambi Juice', price: 250, color: 'text-green-500', bgColor: 'bg-green-50', description: 'Sweet lime juice.', image: 'https://images.unsplash.com/photo-1622597467822-0f1e8093d6e5?auto=format&fit=crop&q=80&w=400' },
+  { id: 'nj-4', category: 'Natural Juice', name: 'Mosambi Juice', price: 250, color: 'text-green-500', bgColor: 'bg-green-50', description: 'Sweet lime juice.', image: '/images/products/mosambi-juice.webp' },
   { id: 'nj-5', category: 'Natural Juice', name: 'Beetroot (Chukandar)', price: 250, color: 'text-red-800', bgColor: 'bg-red-50', description: 'Earthy and rich beetroot juice.', image: '/images/products/beetroot-juice.webp' },
   { id: 'nj-6', category: 'Natural Juice', name: 'Mitta Juice', price: 250, color: 'text-yellow-600', bgColor: 'bg-yellow-50', description: 'Fresh mitta juice.', image: '/images/products/mitta-juice.webp' },
-  { id: 'nj-7', category: 'Natural Juice', name: 'Sugar Can', price: 150, color: 'text-yellow-700', bgColor: 'bg-yellow-50', description: 'Natural sugarcane juice.', image: 'https://images.unsplash.com/photo-1625772266858-4fedac9b68ad?auto=format&fit=crop&q=80&w=400' },
+  { id: 'nj-7', category: 'Natural Juice', name: 'Sugar Can', price: 150, color: 'text-yellow-700', bgColor: 'bg-yellow-50', description: 'Natural sugarcane juice.', image: '/images/products/sugarcane-juice.webp' },
   { id: 'nj-8', category: 'Natural Juice', name: 'ABC Fresh Juice', price: 250, color: 'text-red-600', bgColor: 'bg-red-50', description: 'Apple, Beetroot, and Carrot mix.', image: '/images/products/abc-juice.webp' },
 
   // 2. Milk Shake
@@ -35,21 +35,21 @@ export const JUICES: Juice[] = [
   { id: 'ms-8', category: 'Milk Shake', name: 'Anjeer Shake', variants: [{name: 'Medium', price: 450}, {name: 'XL', price: 600}], color: 'text-stone-700', bgColor: 'bg-stone-100', description: 'Healthy fig milk shake.', image: '/images/products/anjeer-milk-shake.webp' },
 
   // 3. Lassi & Colada
-  { id: 'lc-1', category: 'Lassi & Colada', name: 'Sweet Lassi', price: 250, color: 'text-stone-800', bgColor: 'bg-stone-50', description: 'Traditional sweet yogurt drink.', image: 'https://images.unsplash.com/photo-1648981229415-de1616c31ec1?auto=format&fit=crop&q=80&w=400' },
-  { id: 'lc-2', category: 'Lassi & Colada', name: 'Mango Lassi', price: 350, color: 'text-orange-500', bgColor: 'bg-orange-50', description: 'Mango flavored traditional lassi.', image: 'https://images.unsplash.com/photo-1546251268-084a7e93dbd2?auto=format&fit=crop&q=80&w=400' },
-  { id: 'lc-3', category: 'Lassi & Colada', name: 'Lassi with Icecream', price: 350, color: 'text-stone-800', bgColor: 'bg-stone-50', description: 'Lassi topped with rich ice cream.', image: 'https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?auto=format&fit=crop&q=80&w=400' },
-  { id: 'lc-4', category: 'Lassi & Colada', name: 'Cold Coffee', price: 300, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Classic chilled coffee.', image: 'https://images.unsplash.com/photo-1461023058943-0708e52c6f1a?auto=format&fit=crop&q=80&w=400' },
-  { id: 'lc-5', category: 'Lassi & Colada', name: 'Ice Cream Coffee', price: 350, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Cold coffee blended with ice cream.', image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=400' },
-  { id: 'lc-6', category: 'Lassi & Colada', name: 'Pina Colada', price: 450, color: 'text-yellow-600', bgColor: 'bg-yellow-50', description: 'Pineapple and coconut delight.', image: 'https://images.unsplash.com/photo-1614088927059-e935706240f7?auto=format&fit=crop&q=80&w=400' },
+  { id: 'lc-1', category: 'Lassi & Colada', name: 'Sweet Lassi', price: 250, color: 'text-stone-800', bgColor: 'bg-stone-50', description: 'Traditional sweet yogurt drink.', image: '/images/products/sweet-lassi.webp' },
+  { id: 'lc-2', category: 'Lassi & Colada', name: 'Mango Lassi', price: 350, color: 'text-orange-500', bgColor: 'bg-orange-50', description: 'Mango flavored traditional lassi.', image: '/images/products/mango-lassi.webp' },
+  { id: 'lc-3', category: 'Lassi & Colada', name: 'Lassi with Icecream', price: 350, color: 'text-stone-800', bgColor: 'bg-stone-50', description: 'Lassi topped with rich ice cream.', image: '/images/products/lassi-icecream.webp' },
+  { id: 'lc-4', category: 'Lassi & Colada', name: 'Cold Coffee', price: 300, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Classic chilled coffee.', image: '/images/products/cold-coffee.webp' },
+  { id: 'lc-5', category: 'Lassi & Colada', name: 'Ice Cream Coffee', price: 350, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Cold coffee blended with ice cream.', image: '/images/products/cold-coffee-icecream.webp' },
+  { id: 'lc-6', category: 'Lassi & Colada', name: 'Pina Colada', price: 450, color: 'text-yellow-600', bgColor: 'bg-yellow-50', description: 'Pineapple and coconut delight.', image: '/images/products/pina-colada.webp' },
 
   // 4. Refreshment
-  { id: 'rf-1', category: 'Refreshment', name: 'Channa Chat', price: 200, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Spicy and tangy chickpea snack.', image: 'https://images.unsplash.com/photo-1601050690597-df0568a70950?auto=format&fit=crop&q=80&w=400' },
-  { id: 'rf-2', category: 'Refreshment', name: 'Fruit Chaat / Salad', price: 250, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Mixed seasonal fresh fruits.', image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&q=80&w=400' },
-  { id: 'rf-3', category: 'Refreshment', name: 'Golgapa 6PC', price: 150, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Crispy shells with tangy water.', image: 'https://images.unsplash.com/photo-1601050690597-df0568a70950?auto=format&fit=crop&q=80&w=400' },// reusing chaat img
-  { id: 'rf-4', category: 'Refreshment', name: 'Samosa Chaat', variants: [{name: 'Single', price: 120}, {name: 'Double', price: 180}], color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Samosa topped with channa and chutneys.', image: 'https://images.unsplash.com/photo-1589301773412-25e1a12e2ae9?auto=format&fit=crop&q=80&w=400' },
-  { id: 'rf-5', category: 'Refreshment', name: 'Dhai Bhalay', price: 200, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Lentil dumplings in savory yogurt.', image: 'https://images.unsplash.com/photo-1589301773412-25e1a12e2ae9?auto=format&fit=crop&q=80&w=400' },
+  { id: 'rf-1', category: 'Refreshment', name: 'Channa Chat', price: 200, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Spicy and tangy chickpea snack.', image: '/images/products/channa-chaat.webp' },
+  { id: 'rf-2', category: 'Refreshment', name: 'Fruit Chaat / Salad', price: 250, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Mixed seasonal fresh fruits.', image: '/images/products/fruit-chat.webp' },
+  { id: 'rf-3', category: 'Refreshment', name: 'Golgapa 6PC', price: 150, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Crispy shells with tangy water.', image: '/images/products/golgappy.webp' },// reusing chaat img
+  { id: 'rf-4', category: 'Refreshment', name: 'Samosa Chaat', variants: [{name: 'Single', price: 120}, {name: 'Double', price: 180}], color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Samosa topped with channa and chutneys.', image: '/images/products/samosa-chaat.webp' },
+  { id: 'rf-5', category: 'Refreshment', name: 'Dhai Bhalay', price: 200, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Lentil dumplings in savory yogurt.', image: '/images/products/dahi-bhally.webp' },
   { id: 'rf-6', category: 'Refreshment', name: 'Beef Pulao (Kilo)', price: 1000, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Aromatic beef pulao per kilogram.', image: 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&q=80&w=400' },
-  { id: 'rf-7', category: 'Refreshment', name: 'Sweet Rice (Zarda) (Kilo)', price: 1000, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Sweetened colored rice dessert per kilogram.', image: 'https://images.unsplash.com/photo-1627092323868-d05e26ecbda7?auto=format&fit=crop&q=80&w=400' },
+  { id: 'rf-7', category: 'Refreshment', name: 'Sweet Rice (Zarda) (Kilo)', price: 1000, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Sweetened colored rice dessert per kilogram.', image: '/images/products/sweet-rice.webp' },
 
   // 5. Ice Cream Scoop
   ...[
