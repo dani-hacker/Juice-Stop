@@ -26,6 +26,7 @@ import { VariantModal } from './components/VariantModal';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'menu'>('home');
+  const [menuInitialCategory, setMenuInitialCategory] = useState<string>('All');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -102,6 +103,7 @@ export default function App() {
 
   const formatWhatsAppMessage = (items: CartItem[], total: number, name: string, address: string) => {
     const greeting = "*Hello Juice Stop! I would like to place an order:*\n\n";
+
     const details = items.map(item => {
       const variantText = [item.flavor, item.variantName].filter(Boolean).join(' - ');
       const variantSuffix = variantText ? ` (${variantText})` : '';
@@ -172,7 +174,7 @@ export default function App() {
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-stone-400">
             <button onClick={() => setCurrentPage('home')} className={`transition-colors uppercase tracking-widest font-bold ${currentPage === 'home' ? 'text-white' : 'hover:text-white'}`}>Home</button>
-            <button onClick={() => setCurrentPage('menu')} className={`transition-colors uppercase tracking-widest font-bold ${currentPage === 'menu' ? 'text-white' : 'hover:text-white'}`}>Menu</button>
+            <button onClick={() => { setMenuInitialCategory('All'); setCurrentPage('menu'); }} className={`transition-colors uppercase tracking-widest font-bold ${currentPage === 'menu' ? 'text-white' : 'hover:text-white'}`}>Menu</button>
             {currentPage === 'home' && (
               <>
                 <a href="#philosophy" className="hover:text-white transition-colors">Our Story</a>
@@ -235,7 +237,7 @@ export default function App() {
                   Home
                 </button>
                 <button 
-                  onClick={() => { setCurrentPage('menu'); setIsMobileMenuOpen(false); }} 
+                  onClick={() => { setMenuInitialCategory('All'); setCurrentPage('menu'); setIsMobileMenuOpen(false); }} 
                   className={`text-left text-lg font-bold uppercase tracking-widest transition-colors ${currentPage === 'menu' ? 'text-red-500' : 'text-stone-300 hover:text-white'}`}
                 >
                   Menu
@@ -328,7 +330,7 @@ export default function App() {
               transition={{ delay: 0.2 }}
             >
               <button 
-                onClick={() => setCurrentPage('menu')}
+                onClick={() => { setMenuInitialCategory('All'); setCurrentPage('menu'); }}
 
                 className="inline-flex items-center gap-2 bg-[#e20a16] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#b00710] shadow-xl transition-all"
               >
@@ -521,11 +523,80 @@ export default function App() {
         
         <div className="mt-12 text-center">
           <button 
-            onClick={() => setCurrentPage('menu')}
+            onClick={() => { setMenuInitialCategory('All'); setCurrentPage('menu'); }}
             className="inline-flex items-center gap-2 bg-[#e20a16] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-[#b00710] shadow-xl transition-all"
           >
             Explore Full Menu <ArrowRight size={20} />
           </button>
+        </div>
+      </section>
+
+      {/* Fast Food Section */}
+      <section id="fast-food" className="bg-stone-100 py-24 border-t border-stone-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-red-600 font-bold uppercase tracking-widest text-sm block mb-2">Tasty Dots</span>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase italic text-stone-900">FAST <span className="text-red-600">FOOD</span></h2>
+            </div>
+            <p className="text-stone-500 max-w-md">
+              Craving a bite? Check out our savory fast food menu, featuring premium burgers, wraps, and loaded fries!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {JUICES.filter(j => j.category === 'Fast Food').slice(0, 8).map((juice) => (
+              <motion.div 
+                key={juice.id}
+                whileHover={{ y: -10 }}
+                className="group bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm hover:shadow-xl transition-all flex flex-col"
+              >
+                <div className="relative h-48 overflow-hidden shrink-0">
+                  <img 
+                    src={juice.image} 
+                    alt={juice.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full font-bold text-stone-900 shadow-sm text-sm">
+                    {juice.price ? `Rs. ${juice.price}` : `From Rs. ${Math.min(...(juice.variants?.map(v => v.price) || [0]))}`}
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold mb-2 text-black">{juice.name}</h3>
+                  <p className="text-stone-500 text-sm mb-6 flex-1">{juice.description}</p>
+                  <div className="flex gap-3 mt-auto">
+                    <button 
+                      onClick={() => handleOrderNow(juice)}
+                      className="flex-1 bg-stone-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                      Order Now
+                    </button>
+                    <button 
+                      onClick={() => addToCart(juice)}
+                      className="w-14 h-12 flex items-center justify-center border-2 border-stone-900 rounded-xl text-stone-900 hover:bg-stone-900 hover:text-white transition-all shadow-sm"
+                    >
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="mt-12 text-center">
+            <button 
+              onClick={() => {
+                setMenuInitialCategory('Fast Food');
+                setCurrentPage('menu');
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' }), 0);
+              }}
+              className="inline-flex items-center gap-2 bg-stone-900 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-stone-800 shadow-xl transition-all"
+            >
+              View More Fast Food <ArrowRight size={20} />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -670,7 +741,7 @@ export default function App() {
 
         </>
       ) : (
-        <MenuPage onAddToCart={addToCart} onOrderNow={handleOrderNow} />
+        <MenuPage initialCategory={menuInitialCategory} onAddToCart={addToCart} onOrderNow={handleOrderNow} />
       )}
 
       {/* Location Section */}

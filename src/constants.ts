@@ -10,7 +10,8 @@ export const CATEGORIES = [
   'Refreshment',
   'Ice Cream Scoop',
   'Gola & Faloda',
-  'Ice Cream Shakes'
+  'Ice Cream Shakes',
+  'Fast Food'
 ];
 
 export const JUICES: Juice[] = [
@@ -50,8 +51,21 @@ export const JUICES: Juice[] = [
   { id: 'gf-6', category: 'Gola & Faloda', name: 'Protein 30g Shake w/ fruits', price: 800, color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Healthy protein mix with fresh fruits.', image: '/images/products/protein-30g.webp' },
 
   // 7. Ice Cream Shakes
-  { id: 'ics-grouped-1', category: 'Ice Cream Shakes', name: 'Classic Ice Cream Shakes', flavors: ['Tutti fruity', 'Kulfa', 'Pistachio', 'Strawberry', 'Vanilla', 'Coconut', 'Paraline', 'Mango', 'Chocolate Chip', 'Coffee'], variants: [{name: 'Medium', price: 350}, {name: 'Large', price: 450}], color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Rich ice cream blended into a thick shake. Choose your flavor.', image: '/images/products/strawberry-ic-shake.webp' },
-  { id: 'ics-grouped-2', category: 'Ice Cream Shakes', name: 'Premium Ice Cream Shakes', flavors: ['Fresh Banana', 'Fresh Mango', 'Oreo'], variants: [{name: 'Medium', price: 450}, {name: 'Large', price: 550}], color: 'text-orange-500', bgColor: 'bg-orange-50', description: 'Ultimate premium thick shakes with fresh ingredients and ice cream.', image: '/images/products/oreo-shake-pro.webp' }
+  { id: 'ics-grouped-1', category: 'Ice Cream Shakes', name: 'Classic Ice Cream Shakes', flavors: ['Tutti fruity', 'Kulfa', 'Pistachio', 'Strawberry', 'Vanilla', 'Coconut', 'Paraline', 'Mango', 'Chocolate Chip', 'Coffee'], variants: [{name: 'Medium', price: 400}, {name: 'Large', price: 500}], color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Rich ice cream blended into a thick shake. Choose your flavor.', image: '/images/products/strawberry-ic-shake.webp' },
+  { id: 'ics-grouped-2', category: 'Ice Cream Shakes', name: 'Sniker Ice Cream Shake', price: 600, color: 'text-orange-500', bgColor: 'bg-orange-50', description: 'Ultimate premium thick shake with Sniker and fresh ice cream.', image: 'https://mymorningmocha.com/wp-content/uploads/2022/07/Snickers-milkshake-recipe.jpg' },
+  { id: 'ics-grouped-3', category: 'Ice Cream Shakes', name: 'Oreo Ice Cream Shake', variants: [{name: 'Medium', price: 450}, {name: 'Large', price: 550}], color: 'text-stone-800', bgColor: 'bg-stone-100', description: 'Delicious thick shake blended with crunchy Oreo cookies and premium ice cream.', image: 'https://www.whiskaffair.com/wp-content/uploads/2020/07/Oreo-Milkshake-2-3.jpg' },
+
+  // 8. Fast Food
+  { id: 'ff-1', category: 'Fast Food', name: 'Dill Wala Burger', price: 220, color: 'text-red-700', bgColor: 'bg-red-50', description: 'Special heart-shaped bun with signature patty.', image: '/images/products/dill-wala-burger.webp' },
+  { id: 'ff-2', category: 'Fast Food', name: 'Shami Burger', price: 100, color: 'text-amber-700', bgColor: 'bg-amber-50', description: 'Classic street style soft shami burger.', image: 'https://images.deliveryhero.io/image/fd-pk/LH/qzte-listing.jpg' },
+  { id: 'ff-3', category: 'Fast Food', name: 'Anda Shami Burger', price: 150, color: 'text-amber-600', bgColor: 'bg-amber-50', description: 'Traditional shami burger layered with fried egg.', image: 'https://images.deliveryhero.io/image/fd-pk/LH/qzte-listing.jpg' },
+  { id: 'ff-4', category: 'Fast Food', name: 'Double Anda Wrap Burger', price: 200, color: 'text-orange-600', bgColor: 'bg-orange-50', description: 'Unique wrapped burger loaded with double egg.', image: 'https://images.deliveryhero.io/image/fd-pk/Products/7771028.jpg?width=%s' },
+  { id: 'ff-5', category: 'Fast Food', name: 'Shami Chicken Burger', price: 250, color: 'text-yellow-700', bgColor: 'bg-yellow-50', description: 'Fusion burger with chicken and shami kabab.', image: 'https://i.pinimg.com/474x/63/12/ca/6312ca746ff19f328808089386f32bcc.jpg' },
+  { id: 'ff-6', category: 'Fast Food', name: 'Anda Shami Chicken Burger', price: 280, color: 'text-orange-700', bgColor: 'bg-orange-50', description: 'The ultimate loaded chicken and egg shami burger.', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROqNvAM_Tjo-bKjs33hCDIAUhdFd1OlSb5lA&s' },
+  { id: 'ff-7', category: 'Fast Food', name: 'Chicken Shawarma M/L', variants: [{name: 'Medium', price: 150}, {name: 'Large', price: 200}], color: 'text-red-600', bgColor: 'bg-red-50', description: 'Authentic roasted chicken wrapped in pita.', image: 'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/rhoaiclqj1rrhfxnln5y' },
+  { id: 'ff-8', category: 'Fast Food', name: 'Finger Fries Simple', price: 100, color: 'text-yellow-500', bgColor: 'bg-yellow-50', description: 'Crispy golden hot french fries.', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&q=80&w=400' },
+  { id: 'ff-9', category: 'Fast Food', name: 'Sosis Finger Fries', price: 150, color: 'text-red-500', bgColor: 'bg-red-50', description: 'Finger fries mixed with savory sausages.', image: 'https://thumbs.dreamstime.com/b/fries-french-tomato-sauce-sweet-potato-finger-chips-golden-fried-potatoes-junk-food-snack-kraft-paper-closeup-333200567.jpg' },
+  { id: 'ff-10', category: 'Fast Food', name: 'Loaded Frise', price: 350, color: 'text-amber-800', bgColor: 'bg-amber-50', description: 'Fries fully loaded with meats, cheese and signature sauces.', image: 'https://therecipecritic.com/wp-content/uploads/2023/02/loaded-fries-4.jpg' }
 ];
 
 export const SHOP_DETAILS = {

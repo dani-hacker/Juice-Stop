@@ -7,11 +7,12 @@ import { Juice } from '../types';
 interface MenuPageProps {
   onAddToCart: (juice: Juice) => void;
   onOrderNow: (juice: Juice) => void;
+  initialCategory?: string;
 }
 
-export function MenuPage({ onAddToCart, onOrderNow }: MenuPageProps) {
+export function MenuPage({ onAddToCart, onOrderNow, initialCategory = 'All' }: MenuPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
   
   // Real-time filtering
   const filteredJuices = useMemo(() => {
